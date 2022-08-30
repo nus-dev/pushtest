@@ -12,11 +12,17 @@ import axios from 'axios';
 
 const { publicRuntimeConfig } = getConfig();
 
+export interface Push {
+    title?: string;
+    body?: string;
+}
+
 interface Props {
     //
 }
 
 interface State {
+    pushes: Array<Push>;
     sendPushAsync: (data: {
         authToken: string;
         title: string;
@@ -25,13 +31,16 @@ interface State {
 }
 
 const initialState: State = {
+    pushes: [],
     sendPushAsync: () => undefined,
 };
 
 const PushContext = createContext<State>(initialState);
 
 export const PushContextProvider: React.FC<PropsWithChildren> = (props) => {
+    const [pushes, setPushes] = useState<Array<Push>>([]);
     const [token, setToken] = useState<string>();
+
     useEffect(() => {
         const firebaseConfig = {
             apiKey: publicRuntimeConfig.APIKEY,
@@ -49,6 +58,13 @@ export const PushContextProvider: React.FC<PropsWithChildren> = (props) => {
             new Notification(payload.notification?.title || 'title', {
                 body: payload.notification?.body,
             });
+            setPushes((pushes) => [
+                {
+                    title: payload.notification?.title,
+                    body: payload.notification?.body,
+                },
+                ...pushes,
+            ]);
         });
 
         getToken(messaging, {
@@ -87,6 +103,7 @@ export const PushContextProvider: React.FC<PropsWithChildren> = (props) => {
     return (
         <PushContext.Provider
             value={{
+                pushes,
                 sendPushAsync,
             }}
         >
