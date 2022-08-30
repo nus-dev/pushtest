@@ -1,67 +1,145 @@
-import type { NextPage } from 'next';
-import { useEffect, useRef, useState } from 'react';
-import styles from '../styles/Home.module.css';
+import React, { useContext, useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { InputText } from 'primereact/inputtext';
+import { Button } from 'primereact/button';
+import { Divider } from 'primereact/divider';
+import { classNames } from 'primereact/utils';
+import 'primereact/resources/themes/lara-light-indigo/theme.css';
+import 'primeicons/primeicons.css';
+import 'primereact/resources/primereact.css';
+import 'primeflex/primeflex.css';
+import PushContext from '../src/context/PushContext';
 
-const Home: NextPage = () => {
-    const [appServerPublicKey, setKey] = useState('');
-    const registerRef = useRef<ServiceWorkerRegistration>();
-    useEffect(() => {
-        (async () => {
-            if (!('serviceWorker' in navigator)) return;
-            const register = await navigator.serviceWorker.register('/sw.js');
-            registerRef.current = register;
-        })();
-    }, []);
+const ReactHookFormDemo = () => {
+    const defaultValues = {
+        authToken: '',
+        title: '',
+        body: '',
+    };
 
-    function urlB64ToUint8Array(base64String: string) {
-        const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-        const base64 = (base64String + padding)
-            .replace(/\-/g, '+')
-            .replace(/_/g, '/');
+    const {
+        control,
+        formState: { errors },
+        handleSubmit,
+        reset,
+    } = useForm({ defaultValues });
 
-        const rawData = window.atob(base64);
-        const outputArray = new Uint8Array(rawData.length);
+    const { sendPushAsync } = useContext(PushContext);
 
-        for (let i = 0; i < rawData.length; ++i) {
-            outputArray[i] = rawData.charCodeAt(i);
-        }
-        return outputArray;
-    }
+    const onSubmit = (data: typeof defaultValues) => {
+        sendPushAsync(data);
+    };
 
-    useEffect(() => {
-        (async () => {
-            const p = await Notification.requestPermission();
-            if (p !== 'granted') {
-                console.log('permission', p);
-                return;
-            }
-
-            if (!appServerPublicKey) return;
-            const applicationServerKey = urlB64ToUint8Array(appServerPublicKey);
-            if (!registerRef.current) return;
-            registerRef.current.pushManager
-                .subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: applicationServerKey,
-                })
-                .then((subscription) => {
-                    console.log('User is subscribed.');
-                    console.log(JSON.stringify(subscription));
-                })
-                .catch((err) => {
-                    console.log('Failed to subscribe the user: ', err);
-                });
-        })();
-    }, [appServerPublicKey]);
+    const getFormErrorMessage = (name: keyof typeof defaultValues) => {
+        return (
+            errors[name] && (
+                <small className="p-error">{errors[name]?.message}</small>
+            )
+        );
+    };
 
     return (
-        <div className={styles.container}>
-            <input
-                value={appServerPublicKey}
-                onChange={(e) => setKey(e.target.value)}
-            ></input>
+        <div className="form-demo">
+            <div className="flex justify-content-center">
+                <div className="card">
+                    <h5 className="text-center">Send Push Form</h5>
+                    <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
+                        <div className="field">
+                            <span className="p-float-label">
+                                <Controller
+                                    name="authToken"
+                                    control={control}
+                                    rules={{
+                                        required: 'AuthToken is required.',
+                                    }}
+                                    render={({ field, fieldState }) => (
+                                        <InputText
+                                            id={'authToken'}
+                                            {...field}
+                                            autoFocus
+                                            className={classNames({
+                                                'p-invalid': fieldState.error,
+                                            })}
+                                        />
+                                    )}
+                                />
+                                <label
+                                    htmlFor="authToken"
+                                    className={classNames({
+                                        'p-error': errors.authToken,
+                                    })}
+                                >
+                                    AuthToken*
+                                </label>
+                            </span>
+                            {getFormErrorMessage('authToken')}
+                        </div>
+                        <div className="field">
+                            <span className="p-float-label">
+                                <Controller
+                                    name="title"
+                                    control={control}
+                                    rules={{ required: 'Title is required.' }}
+                                    render={({ field, fieldState }) => (
+                                        <InputText
+                                            id={'title'}
+                                            {...field}
+                                            autoFocus
+                                            className={classNames({
+                                                'p-invalid': fieldState.error,
+                                            })}
+                                        />
+                                    )}
+                                />
+                                <label
+                                    htmlFor="title"
+                                    className={classNames({
+                                        'p-error': errors.title,
+                                    })}
+                                >
+                                    Title*
+                                </label>
+                            </span>
+                            {getFormErrorMessage('title')}
+                        </div>
+                        <div className="field">
+                            <span className="p-float-label">
+                                <Controller
+                                    name="body"
+                                    control={control}
+                                    rules={{ required: 'Body is required.' }}
+                                    render={({ field, fieldState }) => (
+                                        <InputText
+                                            id={'body'}
+                                            {...field}
+                                            autoFocus
+                                            className={classNames({
+                                                'p-invalid': fieldState.error,
+                                            })}
+                                        />
+                                    )}
+                                />
+                                <label
+                                    htmlFor="body"
+                                    className={classNames({
+                                        'p-error': errors.body,
+                                    })}
+                                >
+                                    Body*
+                                </label>
+                            </span>
+                            {getFormErrorMessage('body')}
+                        </div>
+                        <Button
+                            type="submit"
+                            label="Send Push"
+                            className="mt-2"
+                        />
+                    </form>
+                </div>
+            </div>
         </div>
     );
 };
 
-export default Home;
+export default ReactHookFormDemo;

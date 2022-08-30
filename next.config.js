@@ -1,8 +1,10 @@
 /** @type {import('next').NextConfig} */
 const withPlugins = require('next-compose-plugins');
+const { publicRuntimeConfig } = require('./next.runtimeConfig');
 const withPWA = require('next-pwa');
 
 const nextConfig = {
+    publicRuntimeConfig,
     reactStrictMode: true,
 };
 

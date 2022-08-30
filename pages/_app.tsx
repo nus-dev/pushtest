@@ -1,6 +1,7 @@
 import '../styles/globals.css';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
+import { PushContextProvider } from '../src/context/PushContext';
 
 function MyApp({ Component, pageProps }: AppProps) {
     return (
@@ -88,7 +89,9 @@ function MyApp({ Component, pageProps }: AppProps) {
                 <meta name="theme-color" content="#ffffff" />
                 <link rel="manifest" href="/manifest.json" />
             </Head>
-            <Component {...pageProps} />
+            <PushContextProvider>
+                <Component {...pageProps} />
+            </PushContextProvider>
         </>
     );
 }
