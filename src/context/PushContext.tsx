@@ -28,11 +28,13 @@ interface State {
         title: string;
         body: string;
     }) => void;
+    ready: () => void;
 }
 
 const initialState: State = {
     pushes: [],
     sendPushAsync: () => undefined,
+    ready: () => undefined,
 };
 
 const PushContext = createContext<State>(initialState);
@@ -41,7 +43,7 @@ export const PushContextProvider: React.FC<PropsWithChildren> = (props) => {
     const [pushes, setPushes] = useState<Array<Push>>([]);
     const [token, setToken] = useState<string>();
 
-    useEffect(() => {
+    const ready = useCallback(() => {
         const firebaseConfig = {
             apiKey: publicRuntimeConfig.APIKEY,
             authDomain: publicRuntimeConfig.AUTHDOMAIN,
@@ -72,6 +74,7 @@ export const PushContextProvider: React.FC<PropsWithChildren> = (props) => {
         })
             .then((token) => {
                 setToken(token);
+                console.info('set token');
             })
             .catch((e) => console.error(e));
     }, []);
@@ -105,6 +108,7 @@ export const PushContextProvider: React.FC<PropsWithChildren> = (props) => {
             value={{
                 pushes,
                 sendPushAsync,
+                ready,
             }}
         >
             {props.children}

@@ -24,7 +24,7 @@ const ReactHookFormDemo = () => {
         handleSubmit,
     } = useForm({ defaultValues });
 
-    const { pushes, sendPushAsync } = useContext(PushContext);
+    const { pushes, sendPushAsync, ready } = useContext(PushContext);
 
     const onSubmit = (data: typeof defaultValues) => {
         sendPushAsync(data);
@@ -40,6 +40,7 @@ const ReactHookFormDemo = () => {
 
     return (
         <>
+            <button onClick={ready}>Ready</button>
             <div className="form-demo">
                 <div className="flex justify-content-center">
                     <div className="card">
